@@ -41,22 +41,28 @@ void UFlecsSubsystem::InitFlecs(UStaticMesh* InMesh)
 	
 	//this system processes the growth of our entities
 	auto system_grow = GetEcsWorld()->system<FlecsCorn>("Grow System")
-	.run([](flecs::iter it, FlecsCorn* fc) -> void {
-		while(it.next())
+		.run([](flecs::iter it) {
+		while (it.next())
 		{
-			float GrowthRate = 20*it.delta_time();
+			auto fc = it.field<FlecsCorn>(0);
+
+			float GrowthRate = 20 * it.delta_time();
 			for (int i : it) {
 				//if we haven't grown fully (100) then grow
-				fc[i].Growth+=(fc[i].Growth<100)*GrowthRate;
+				fc[i].Growth += (fc[i].Growth < 100) * GrowthRate;
 			}
 		}
-	});
+			});
+
 	
 	//this system sets the growth value of our entities in ISM so we can access it from materials.
 	auto system_copy_growth = GetEcsWorld()->system<FlecsCorn, FlecsISMIndex, FlecsIsmRef>("Grow Renderer System")
-	.run([](flecs::iter it, FlecsCorn* fw, FlecsISMIndex* fi, FlecsIsmRef* fr)-> void {
+	.run([](flecs::iter it)-> void {
 		while(it.next())
 		{
+			auto fw = it.field<FlecsCorn>(0);
+			auto fi = it.field<FlecsISMIndex>(1);
+			auto fr = it.field<FlecsIsmRef>(2);
 			for (int i : it) {
 				auto index = fi[i].Value;
 				fr[i].Value->SetCustomDataValue(index, 0, fw[i].Growth, true);
