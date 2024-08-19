@@ -33,7 +33,7 @@ struct FFlecsEntityHandle
 		FlecsEntityId = inId;
 	}
 	UPROPERTY(BlueprintReadWrite)
-	int FlecsEntityId;
+	int FlecsEntityId = 0;
 };
 
 UCLASS()
