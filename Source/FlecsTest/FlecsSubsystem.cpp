@@ -1,4 +1,5 @@
 #include "FlecsSubsystem.h"
+
 flecs::world* UFlecsSubsystem::GetEcsWorld() const{return ECSWorld;}
 void UFlecsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -13,7 +14,7 @@ void UFlecsSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	//flecs explorer and monitor
 	//comment this out if you not using it, it has some performance overhead
 	//go to https://www.flecs.dev/explorer/ when the project is running to inspect active entities and values
-	GetEcsWorld()->import<flecs::monitor>();
+	GetEcsWorld()->import<flecs::stats>();
 	GetEcsWorld()->set<flecs::Rest>({});
 	
 	//expose values with names to Flecs Explorer for easier inspection & debugging
@@ -40,20 +41,27 @@ void UFlecsSubsystem::InitFlecs(UStaticMesh* InMesh)
 	
 	//this system processes the growth of our entities
 	auto system_grow = GetEcsWorld()->system<FlecsCorn>("Grow System")
-	.iter([](flecs::iter it, FlecsCorn* fc) {
-		float GrowthRate = 20*it.delta_time();
-		for (int i : it) {
-			//if we haven't grown fully (100) then grow
-			fc[i].Growth+=(fc[i].Growth<100)*GrowthRate;
+	.run([](flecs::iter it, FlecsCorn* fc) -> void {
+		while(it.next())
+		{
+			float GrowthRate = 20*it.delta_time();
+			for (int i : it) {
+				//if we haven't grown fully (100) then grow
+				fc[i].Growth+=(fc[i].Growth<100)*GrowthRate;
+			}
 		}
 	});
 	
 	//this system sets the growth value of our entities in ISM so we can access it from materials.
 	auto system_copy_growth = GetEcsWorld()->system<FlecsCorn, FlecsISMIndex, FlecsIsmRef>("Grow Renderer System")
-	.iter([](flecs::iter it, FlecsCorn* fw, FlecsISMIndex* fi, FlecsIsmRef* fr) {
-		for (int i : it) {
-			auto index = fi[i].Value;
-			fr[i].Value->SetCustomDataValue(index, 0, fw[i].Growth, true);
+	.run([](flecs::iter it, FlecsCorn* fw, FlecsISMIndex* fi, FlecsIsmRef* fr)-> void {
+		while(it.next())
+		{
+			for (int i : it) {
+				auto index = fi[i].Value;
+				fr[i].Value->SetCustomDataValue(index, 0, fw[i].Growth, true);
+			}
+			
 		}
 	});
 	
