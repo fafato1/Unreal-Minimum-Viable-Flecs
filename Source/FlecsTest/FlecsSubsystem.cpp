@@ -40,7 +40,7 @@ void UFlecsSubsystem::InitFlecs(UStaticMesh* InMesh)
 	CornRenderer->NumCustomDataFloats = 2;
 	
 	//this system processes the growth of our entities
-	auto system_grow = GetEcsWorld()->system<FlecsCorn>("Grow System")
+	GetEcsWorld()->system<FlecsCorn>("Grow System")
 		.run([](flecs::iter it) {
 		while (it.next())
 		{
@@ -56,7 +56,7 @@ void UFlecsSubsystem::InitFlecs(UStaticMesh* InMesh)
 
 	
 	//this system sets the growth value of our entities in ISM so we can access it from materials.
-	auto system_copy_growth = GetEcsWorld()->system<FlecsCorn, FlecsISMIndex, FlecsIsmRef>("Grow Renderer System")
+	GetEcsWorld()->system<FlecsCorn, FlecsISMIndex, FlecsIsmRef>("Grow Renderer System")
 	.run([](flecs::iter it)-> void {
 		while(it.next())
 		{
@@ -97,6 +97,7 @@ FFlecsEntityHandle UFlecsSubsystem::SpawnCornEntity(FVector location, FRotator r
 	.set<FlecsCorn>({0})
 	.child_of<Corns>()
 	.set_name(StringCast<ANSICHAR>(*FString::Printf(TEXT("Corn%d"), IsmID)).Get());
+	UE_LOG(LogTemp, Warning, TEXT("Corn Spawned!"));
 	return FFlecsEntityHandle{int(entity.id())};
 }
 
