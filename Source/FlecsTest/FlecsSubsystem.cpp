@@ -116,3 +116,36 @@ bool UFlecsSubsystem::Tick(float DeltaTime)
 	if(ECSWorld) ECSWorld->progress(DeltaTime);
 	return true;
 }
+
+TArray<int64> UFlecsSubsystem::ExecuteQuery(const FString& QueryString)
+{
+	TArray<int64> EntityIDs;
+
+	if (!GetEcsWorld())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Flecs world not initialized!"));
+		return EntityIDs;
+	}
+
+	// Create a new query
+	ecs_query_desc_t QueryDesc = {};
+	QueryDesc.expr = TCHAR_TO_UTF8(*QueryString); // Define the query string
+
+	ecs_query_t* Query = ecs_query_init(GetEcsWorld()->c_ptr(), &QueryDesc);
+
+	// Execute the query and collect entity IDs
+	ecs_iter_t It = ecs_query_iter(GetEcsWorld()->c_ptr(), Query);
+	while (ecs_query_next(&It))
+	{
+		for (int32 i = 0; i < It.count; i++)
+		{
+			ecs_entity_t Entity = It.entities[i];
+			EntityIDs.Add(static_cast<int64>(Entity));
+		}
+	}
+
+	FString log = TEXT("Failed to create query with expr.") + FString::FromInt(It.count);
+	UE_LOG(LogTemp, Log, TEXT("%s"), *log);
+
+	return EntityIDs;
+}

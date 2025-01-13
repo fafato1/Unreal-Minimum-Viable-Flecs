@@ -58,6 +58,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="FLECS")
 	float GetEntityGrowthData(FFlecsEntityHandle entityHandle);
 
+	/** Execute a Flecs query using the Flecs Query Language */
+	UFUNCTION(BlueprintCallable, Category = "Flecs")
+	TArray<int64> ExecuteQuery(const FString& QueryString);
+
 protected:
 	FTickerDelegate OnTickDelegate;
 	FTSTicker::FDelegateHandle OnTickHandle;
