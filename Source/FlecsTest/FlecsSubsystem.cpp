@@ -103,12 +103,12 @@ FFlecsEntityHandle UFlecsSubsystem::SpawnCornEntity(FVector location, FRotator r
 
 void UFlecsSubsystem::SetEntityHighlight(FFlecsEntityHandle entityHandle, bool isHighlighted)
 {
-	int idx = GetEcsWorld()->entity(entityHandle.FlecsEntityId).get<FlecsISMIndex>()->Value;
+	int idx = GetEcsWorld()->entity(entityHandle.FlecsEntityId).get<FlecsISMIndex>().Value;
 	CornRenderer->SetCustomDataValue(idx, 1, (float)isHighlighted, true);
 }
 float UFlecsSubsystem::GetEntityGrowthData(FFlecsEntityHandle entityHandle)
 {
-	return GetEcsWorld()->entity(entityHandle.FlecsEntityId).get<FlecsCorn>()->Growth;
+	return GetEcsWorld()->entity(entityHandle.FlecsEntityId).get<FlecsCorn>().Growth;
 }
 
 bool UFlecsSubsystem::Tick(float DeltaTime)
